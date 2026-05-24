@@ -9,6 +9,14 @@ Tectonic is a modernized, complete, self-contained
 engine, powered by [XeTeX](http://xetex.sourceforge.net/) and
 [TeXLive](https://www.tug.org/texlive/).
 
+> Project note: this is a project-specific fork of `tectonic` maintained for
+> [`srothgan/latex-editor`](https://github.com/srothgan/latex-editor). It is
+> based on the `tectonic@0.16.9` release and carries the minimum patches needed
+> to embed Tectonic directly in the editor binary while sharing Fontconfig
+> through `yeslogic-fontconfig-sys` as the single Cargo `links = "fontconfig"`
+> owner. The fork is currently used with external HarfBuzz and vcpkg-managed
+> native dependencies for Windows development and packaging.
+
 ## Read this first
 
 If you just want to compile TeX documents, you should probably **click through
