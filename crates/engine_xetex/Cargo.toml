@@ -32,9 +32,13 @@ tectonic_errors = { path = "../errors", version = ">=0.1.0,<1" }
 tectonic_pdf_io = { path = "../pdf_io", version = ">=0.3.0,<1" }
 tectonic_xetex_layout = { path = "../xetex_layout", version = ">=0.2.1,<1" }
 
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+fontconfig_sys = { git = "https://github.com/srothgan/fontconfig-rs", rev = "a77c7ce571a4c99df0271028a740bf97e374c76f", package = "yeslogic-fontconfig-sys" }
+
 [build-dependencies]
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = ">=0.1.2,<1" }
+tectonic_dep_support = { path = "../dep_support", version = ">=0.1.0,<1" }
 
 [features]
 external-harfbuzz = [

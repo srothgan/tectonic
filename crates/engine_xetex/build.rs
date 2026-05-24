@@ -6,6 +6,19 @@
 
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
+use tectonic_dep_support::{Configuration, Dependency, Spec};
+
+struct FontconfigSpec;
+
+impl Spec for FontconfigSpec {
+    fn get_pkgconfig_spec(&self) -> &str {
+        "fontconfig"
+    }
+
+    fn get_vcpkg_spec(&self) -> &[&str] {
+        &["fontconfig"]
+    }
+}
 
 fn main() {
     let target = env::var("TARGET").unwrap();
@@ -20,7 +33,7 @@ fn main() {
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
     let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
-    let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH");
+    let fontconfig_include_paths = fontconfig_include_paths();
     let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
     // If we want to profile, the default assumption is that we must force the
@@ -94,11 +107,9 @@ fn main() {
         cxx_cfg.include(item);
     }
 
-    if let Ok(fc_includes) = fontconfig_include_path {
-        for item in fc_includes.split(';') {
-            c_cfg.include(item);
-            cxx_cfg.include(item);
-        }
+    for item in &fontconfig_include_paths {
+        c_cfg.include(item);
+        cxx_cfg.include(item);
     }
 
     if graphite2_static {
@@ -125,6 +136,12 @@ fn main() {
     if target.contains("-msvc") {
         c_cfg.flag("/EHsc");
         cxx_cfg.flag("/EHsc");
+        cxx_cfg.flag("/std:c++17");
+        cxx_cfg.flag("/wd4514");
+        cxx_cfg.flag("/wd5045");
+        cxx_cfg.flag("/wd4820");
+        cxx_cfg.flag("/wd4244");
+        cxx_cfg.flag("/wd4365");
     }
 
     // OK, back to generic build rules.
@@ -147,6 +164,36 @@ fn main() {
         let file = file.unwrap();
         println!("cargo:rerun-if-changed={}", file.path().display());
     }
+}
+
+fn fontconfig_include_paths() -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+
+    for key in ["DEP_FONTCONFIG_INCLUDE", "DEP_FONTCONFIG_INCLUDE_PATH"] {
+        println!("cargo:rerun-if-env-changed={key}");
+        if let Ok(value) = env::var(key) {
+            paths.extend(
+                value
+                    .split(';')
+                    .filter(|item| !item.is_empty())
+                    .map(PathBuf::from),
+            );
+        }
+    }
+
+    if paths.is_empty() && target_cfg!(not(target_os = "macos")) {
+        paths.extend(probe_fontconfig_include_paths());
+    }
+
+    paths
+}
+
+fn probe_fontconfig_include_paths() -> Vec<PathBuf> {
+    let dep_cfg = Configuration::default();
+    let dep = Dependency::probe(FontconfigSpec, &dep_cfg);
+    let mut paths = Vec::new();
+    dep.foreach_include_path(|p| paths.push(p.to_owned()));
+    paths
 }
 
 const C_FLAGS: &[&str] = &[

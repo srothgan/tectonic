@@ -5,7 +5,6 @@ name = "tectonic_bridge_fontconfig"
 license = "MIT"
 version = "0.1.2"
 edition = "2021"
-links = "fontconfig"
 description = """
 Exposing fontconfig APIs to the Tectonic C/C++ and Rust code.
 """
@@ -15,12 +14,9 @@ repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 
 [dependencies]
+fontconfig_sys = { git = "https://github.com/srothgan/fontconfig-rs", rev = "a77c7ce571a4c99df0271028a740bf97e374c76f", package = "yeslogic-fontconfig-sys" }
 libc = "0.2"
 tectonic_bridge_png = { path = "../bridge_png", version = ">=0.1.0,<1" }
 
-[build-dependencies]
-tectonic_dep_support = { path = "../dep_support", version = ">=0.1.0,<1" }
-
 [package.metadata.internal_dep_versions]
-tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_bridge_png = "866856eb2cb26ac8c534648bfbd3b0ee88e74d69"
